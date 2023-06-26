@@ -1,0 +1,25 @@
+{
+  "name": "cronos-web",
+  "version": "1.0.0",
+  "description": "Cronometro compartilhado",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/domfernando/cronos-web.git"
+  },
+  "author": "Fernando Domingues",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/domfernando/cronos-web/issues"
+  },
+  "homepage": "https://github.com/domfernando/cronos-web#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemon": "^2.0.22",
+    "socket.io": "^4.7.0"
+  }
+}

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <title>Cronômetro Compartilhado</title>
+    <meta name="description" content="Cronometro para reuniões">
+    <meta name="author" content="Fernando Domingues">
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link href='https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600&display=swap' rel='stylesheet'
+        type='text/css'>
+
+    <style>
+        body {
+            text-align: center;
+        }
+
+        /* button {
+            width: 60px;
+            height: 60px;
+        } */
+
+        .relogio {
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4.5rem;
+            letter-spacing: 1rem;
+            font-weight: bold;
+            text-shadow: 1px 2px #000000;
+            text-align: center;
+            width: 80%;
+        }
+
+        .acao {
+            width: 20%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .aparelho {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            width: 99%;
+        }
+
+        .mostrador {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            background-color: grey;
+        }
+
+        .prompter {
+            width: 100%;
+            height: 50px;
+            background-color: lightblue;
+        }
+
+        .aviso {
+            width: 100%;
+            color: black;
+            font-size: 22pt;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .botoes {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            width: 100%;
+        }
+
+        .icone {
+            width: 100px;
+        }
+
+        #iconeAcao {
+            width: 36px;
+        }
+    </style>
+
+    <script>
+        function defineIconeAcao(act) {
+            switch (act) {
+                case "Stop":
+                    return 'stop-fill.png';
+                case "Pause":
+                    return 'pause-fill.png';
+                case "Warning":
+                    return 'megaphone-fill.png';
+                default:
+                    return 'time-fill.png';
+            }
+        }
+
+        function isModalOpen(modal) {
+            return modal.hasAttribute("open") && modal.getAttribute("open") != "false" ? true : false;
+        };
+
+        function toggleModal(event) {
+            event.preventDefault();
+            const modal = document.getElementById(event.currentTarget.getAttribute("data-target"));
+
+            typeof modal != "undefined" && modal != null && isModalOpen(modal)
+                ? modal.setAttribute("open", false)
+                : modal.setAttribute("open", true);
+        }
+        
+    </script>
+
+</head>
+
+<body>
+
+    <div class="grid aparelho">
+        <div class="mostrador">
+            <div id="timer" class="relogio">00:00</div>
+            <div id="acao">
+                <img id="iconeAcao" src="img/time-fill.png" alt="Ação" title="Cronometro" />
+            </div>
+        </div>
+        <div class="prompter">
+            <div class="aviso" id="texto"></div>
+        </div>
+    </div>
+
+    <nav class="container">
+        <ul>
+            <li></li>
+        </ul>
+        <ul>
+            <li>
+                <button id="start">
+                    <img src="img/play-fill.png" alt="Play" title="Play">
+                </button>
+            </li>
+            <li>
+                <button id="pause">
+                    <img src="img/pause-fill.png" alt="Pause" title="Pause">
+                </button>
+            </li>
+            <li>
+                <button id="reset">
+                    <img src="img/stop-fill.png" alt="Stop" title="Stop">
+                </button>
+            </li>
+            <li>
+                <button id="abreAviso" title="Avisar" data-target="modal-msg" onClick="toggleModal(event)">
+                    <img src="img/mail.png" title="Avisar" alt="Avisar" />
+                </button>
+            </li>
+            <li>
+                <button id="limpar">
+                    <img src="img/close.png" alt="Remover aviso" title="Remover aviso">
+                </button>
+            </li>
+        </ul>
+    </nav>
+
+    <dialog id="modal-msg" class="container">
+        <article>
+            <header>
+                <a href="#" aria-label="Close" class="close" data-target="modal-msg" onClick="toggleModal(event)"></a>
+                Enviar mensagem
+            </header>
+            <div class="grid">
+                <input type="text" id="msgText" placeholder="Digite a mensagem">
+            </div>
+            <footer>
+                <button id="avisar" type="button" data-target="modal-msg">
+                    <img src="img/mail.png" alt="Enviar" title="Enviar" /> Enviar
+                </button>
+            </footer>
+        </article>
+    </dialog>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const timerElement = document.getElementById('timer');
+        const startButton = document.getElementById('start');
+        const pauseButton = document.getElementById('pause');
+        const resetButton = document.getElementById('reset');
+        const avisarButton = document.getElementById('avisar');
+        const limparButton = document.getElementById('limpar');
+
+        startButton.addEventListener('click', () => {
+            socket.emit('start');
+            socket.emit('defineAcao', 'Play');
+
+            var _inicio = new Date();
+
+            socket.emit('mensagem', `Inicio: ${_inicio.getHours()}:${_inicio.getMinutes()}`);
+        });
+
+        pauseButton.addEventListener('click', () => {
+            socket.emit('pause');
+            socket.emit('defineAcao', 'Pause');
+        });
+
+        resetButton.addEventListener('click', () => {
+            socket.emit('reset');
+            socket.emit('defineAcao', 'Stop');
+        });
+
+        avisarButton.addEventListener('click', (e) => {
+
+            var _msg = document.getElementById('msgText');
+
+            if(_msg){
+                socket.emit('mensagem', _msg.value);
+            }    
+            
+            toggleModal(e);
+        });
+
+        limparButton.addEventListener('click', () => {
+            socket.emit('mensagem', '');
+        });
+
+        socket.on("defineAcao", (val) => {
+            document.getElementById('iconeAcao').src = "img/" + defineIconeAcao(val);
+        });
+
+        socket.on("mensagem", (msg) => {
+            var _texto = document.getElementById('texto');
+            if (_texto) {
+                _texto.innerHTML = msg;
+            }
+        });
+
+        socket.on('timer', (value) => {
+            timerElement.textContent = value;
+        });
+    </script>
+</body>
+
+</html>
