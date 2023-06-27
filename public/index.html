@@ -2,11 +2,13 @@
 <html lang="pt-BR">
 
 <head>
-    <title>Cronômetro Compartilhado</title>
-    <meta name="description" content="Cronometro para reuniões">
+    <title>Cronômetro</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="Cronômetro para reuniões">
     <meta name="author" content="Fernando Domingues">
-    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
     <link href='https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600&display=swap' rel='stylesheet'
         type='text/css'>
@@ -24,7 +26,7 @@
         .relogio {
             color: #fff;
             font-family: 'Orbitron', sans-serif;
-            font-size: 4.5rem;
+            font-size: 2.5rem;
             letter-spacing: 1rem;
             font-weight: bold;
             text-shadow: 1px 2px #000000;
@@ -64,8 +66,55 @@
         .aviso {
             width: 100%;
             color: black;
-            font-size: 22pt;
+            font-size: 20pt;
             font-family: 'Orbitron', sans-serif;
+            overflow: hidden;
+        }
+
+        #textoAviso {
+            color: black;
+            font-size: 20pt;
+            -moz-transform: translateX(100%);
+            -webkit-transform: translateX(100%);
+            transform: translateX(100%);
+            -moz-animation: slide-left 15s linear infinite;
+            -webkit-animation: slide-left 15s linear infinite;
+            animation: slide-left 15s linear infinite;
+        }
+
+        @-moz-keyframes slide-left {
+            from {
+                -moz-transform: translateX(100%);
+            }
+
+            to {
+                -moz-transform: translateX(-100%);
+            }
+        }
+
+        /* for Chrome */
+        @-webkit-keyframes slide-left {
+            from {
+                -webkit-transform: translateX(100%);
+            }
+
+            to {
+                -webkit-transform: translateX(-100%);
+            }
+        }
+
+        @keyframes slide-left {
+            from {
+                -moz-transform: translateX(100%);
+                -webkit-transform: translateX(100%);
+                transform: translateX(100%);
+            }
+
+            to {
+                -moz-transform: translateX(-100%);
+                -webkit-transform: translateX(-100%);
+                transform: translateX(-100%);
+            }
         }
 
         .botoes {
@@ -86,16 +135,24 @@
 
     <script>
         function defineIconeAcao(act) {
+            var _icone = "";
+
             switch (act) {
                 case "Stop":
-                    return 'stop-fill.png';
+                    _icone = 'stop-fill.png';
+                    break;
                 case "Pause":
-                    return 'pause-fill.png';
+                    _icone = 'pause-fill.png';
+                    break;
                 case "Warning":
-                    return 'megaphone-fill.png';
+                    _icone = 'megaphone-fill.png';
+                    break;
                 default:
-                    return 'time-fill.png';
+                    _icone = 'time-fill.png';
+                    break;
             }
+
+            document.getElementById('iconeAcao').src = "img/" + _icone;
         }
 
         function isModalOpen(modal) {
@@ -110,7 +167,7 @@
                 ? modal.setAttribute("open", false)
                 : modal.setAttribute("open", true);
         }
-        
+
     </script>
 
 </head>
@@ -125,7 +182,9 @@
             </div>
         </div>
         <div class="prompter">
-            <div class="aviso" id="texto"></div>
+            <div class="aviso" id="texto">
+                <p id="textoAviso"></p>
+            </div>
         </div>
     </div>
 
@@ -182,6 +241,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        let ultimaAcao = 'Stop';
 
         const timerElement = document.getElementById('timer');
         const startButton = document.getElementById('start');
@@ -196,7 +256,7 @@
 
             var _inicio = new Date();
 
-            socket.emit('mensagem', `Inicio: ${_inicio.getHours()}:${_inicio.getMinutes()}`);
+            socket.emit('mensagem', `Inicio: ${_inicio.getHours()}:${_inicio.getMinutes().toString().padStart('0', 2)}`);
         });
 
         pauseButton.addEventListener('click', () => {
@@ -213,10 +273,10 @@
 
             var _msg = document.getElementById('msgText');
 
-            if(_msg){
+            if (_msg) {
                 socket.emit('mensagem', _msg.value);
-            }    
-            
+            }
+
             toggleModal(e);
         });
 
@@ -225,11 +285,24 @@
         });
 
         socket.on("defineAcao", (val) => {
-            document.getElementById('iconeAcao').src = "img/" + defineIconeAcao(val);
+            ultimaAcao = val;
+            defineIconeAcao(val);
+
+            switch (ultimaAcao) {
+                case "Play":
+                    startButton.disabled = true;
+                    break;
+                case "Pause":
+                    startButton.disabled = false;
+                    break;
+                case "Stop":
+                    startButton.disabled = false;
+                    break;
+            }
         });
 
         socket.on("mensagem", (msg) => {
-            var _texto = document.getElementById('texto');
+            var _texto = document.getElementById('textoAviso');
             if (_texto) {
                 _texto.innerHTML = msg;
             }
