@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+
+<head>
+    <title>Cronômetro</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="Cronômetro para reuniões">
+    <meta name="author" content="Fernando Domingues">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link href='https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600&display=swap' rel='stylesheet'
+        type='text/css'>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.4.0/fonts/remixicon.css" rel="stylesheet">
+
+    <style>
+        body {
+            text-align: center;
+        }
+
+        /* button {
+                width: 60px;
+                height: 60px;
+            } */
+
+        .relogio {
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 1rem;
+            font-weight: bold;
+            text-shadow: 1px 2px #000000;
+            text-align: center;
+            width: 80%;
+        }
+
+        .acao {
+            width: 20%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .aparelho {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            width: 99%;
+        }
+
+        .mostrador {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            background-color: grey;
+        }
+
+        .prompter {
+            width: 100%;
+            height: 50px;
+            background-color: lightblue;
+        }
+
+        .aviso {
+            width: 100%;
+            color: black;
+            font-size: 20pt;
+            font-family: 'Orbitron', sans-serif;
+            overflow: hidden;
+        }
+
+        #textoAviso {
+            color: black;
+            font-size: 20pt;
+            -moz-transform: translateX(100%);
+            -webkit-transform: translateX(100%);
+            transform: translateX(100%);
+            -moz-animation: slide-left 15s linear infinite;
+            -webkit-animation: slide-left 15s linear infinite;
+            animation: slide-left 15s linear infinite;
+        }
+
+        @-moz-keyframes slide-left {
+            from {
+                -moz-transform: translateX(100%);
+            }
+
+            to {
+                -moz-transform: translateX(-100%);
+            }
+        }
+
+        /* for Chrome */
+        @-webkit-keyframes slide-left {
+            from {
+                -webkit-transform: translateX(100%);
+            }
+
+            to {
+                -webkit-transform: translateX(-100%);
+            }
+        }
+
+        @keyframes slide-left {
+            from {
+                -moz-transform: translateX(100%);
+                -webkit-transform: translateX(100%);
+                transform: translateX(100%);
+            }
+
+            to {
+                -moz-transform: translateX(-100%);
+                -webkit-transform: translateX(-100%);
+                transform: translateX(-100%);
+            }
+        }
+
+        .botoes {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            width: 100%;
+        }
+
+        .icone {
+            width: 100px;
+        }
+
+        #iconeAcao {
+            width: 36px;
+        }
+
+        .navShow {
+            width: 99%;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+        }
+
+        .navHide {
+            display: none;
+        }
+    </style>
+
+    <script>
+        function defineIconeAcao(act) {
+            var _icone = "";
+
+            switch (act) {
+                case "Stop":
+                    _icone = 'ri-stop-fill';
+                    break;
+                case "Pause":
+                    _icone = 'ri-pause-fill';
+                    break;
+                case "Warning":
+                    _icone = 'ri-megaphone-fill';
+                    break;
+                default:
+                    _icone = 'ri-time-fill';
+                    break;
+            }
+
+            document.getElementById('iconeAcao').className = _icone;
+        }
+
+        function isModalOpen(modal) {
+            return modal.hasAttribute("open") && modal.getAttribute("open") != "false" ? true : false;
+        };
+
+        function toggleModal(event) {
+            event.preventDefault();
+            const modal = document.getElementById(event.currentTarget.getAttribute("data-target"));
+
+            typeof modal != "undefined" && modal != null && isModalOpen(modal)
+                ? modal.setAttribute("open", false)
+                : modal.setAttribute("open", true);
+        }
+    </script>
+
+</head>
+
+<body>
+
+    <div class="grid aparelho">
+        <div class="mostrador">
+            <div id="timer" class="relogio">00:00</div>
+            <div id="acao">
+                <i id="iconeAcao" class="ri-time-fill" style="font-size: 48px;"></i>
+                <p id="activeName"></p>
+            </div>
+        </div>
+        <div class="prompter">
+            <div class="aviso" id="texto">
+                <p id="textoAviso"></p>
+            </div>
+        </div>
+    </div>
+
+    <nav class="container navHide" id="navCommand">
+        <ul>
+            <li></li>
+        </ul>
+        <ul>
+            <li>
+                <button id="start" title="Iniciar" onclick="startTime()">
+                    <i class="ri-play-fill"></i>
+                </button>
+            </li>
+            <li>
+                <button id="pause" title="Pausar" onclick="pauseTime()">
+                    <i class="ri-pause-fill"></i>
+                </button>
+            </li>
+            <li>
+                <button id="reset" title="Parar" onclick="stopTime()">
+                    <i class="ri-stop-fill"></i>
+                </button>
+            </li>
+            <li>
+                <button id="abreAviso" title="Avisar" data-target="modal-msg" onClick="toggleModal(event)">
+                    <i class="ri-mail-send-fill"></i>
+                </button>
+            </li>
+            <li>
+                <button id="limpar" title="Remover texto" onclick="cleanText()">
+                    <i class="ri-mail-close-fill"></i>
+                </button>
+            </li>
+        </ul>
+        <ul>
+            <li>
+                <button id="voltar" title="Voltar para a seleção" class="contrast" onclick="voltar()">
+                    <i class="ri-arrow-go-back-line"></i>
+                </button>
+            </li>
+        </ul>
+    </nav>
+
+    <dialog id="modal-msg" class="container">
+        <article>
+            <header>
+                <a href="#" aria-label="Close" class="close" data-target="modal-msg" onClick="toggleModal(event)"></a>
+                Enviar mensagem
+            </header>
+            <div class="grid">
+                <input type="text" id="msgText" placeholder="Digite a mensagem">
+            </div>
+            <footer>
+                <button id="avisar" type="button" data-target="modal-msg">
+                    <i class="ri-mail-send-fill"></i> Enviar
+                </button>
+            </footer>
+        </article>
+    </dialog>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        const socket = io();
+
+        const urlSearch = new URLSearchParams(window.location.search);
+        const name = urlSearch.get('name');
+        const meet = urlSearch.get('meet');
+
+        const avisarButton = document.getElementById('avisar');
+        const timerElement = document.getElementById('timer');
+        const startButton = document.getElementById('start');
+        const pauseButton = document.getElementById('pause');
+        const resetButton = document.getElementById('reset');
+
+        avisarButton.addEventListener('click', (e) => {
+            var _msg = document.getElementById('msgText');
+
+            if (_msg) {
+                socket.emit('mensagem', _msg.value);
+            }
+
+            toggleModal(e);
+        });
+
+        if (name && meet) {
+            socket.emit("select_meet", {
+                meet: meet,
+                name: name
+            });
+
+            socket.emit("getViewer", (name, meet));
+
+            if (name != 'operador') {
+                document.getElementById('navCommand').className = "container navHide";
+            } else {
+                document.getElementById('navCommand').className = "container navShow";
+            }
+        }
+
+        socket.on("viewer", (rt) => {
+            alert(rt.name);
+        });
+
+        function startTime() {
+            socket.emit('start');
+            socket.emit('defineAcao', 'Play');
+
+            var _inicio = new Date();
+
+            socket.emit('mensagem', `Inicio: ${_inicio.getHours()}:${_inicio.getMinutes().toString().padStart('0', 2)}`);
+        }
+
+        function pauseTime() {
+            socket.emit('pause');
+            socket.emit('defineAcao', 'Pause');
+        }
+
+        function stopTime() {
+            socket.emit('reset');
+            socket.emit('defineAcao', 'Stop');
+        }
+
+        function texting(e) {
+
+            var _msg = document.getElementById('msgText');
+
+            if (_msg) {
+                socket.emit('mensagem', _msg.value);
+            }
+
+            toggleModal(e);
+        }
+
+        function cleanText() {
+            socket.emit('mensagem', '');
+        }
+
+        function voltar() {
+            window.location.href = "/";
+        }
+
+        socket.on("defineAcao", (val) => {
+            ultimaAcao = val;
+            defineIconeAcao(val);
+
+            switch (ultimaAcao) {
+                case "Play":
+                    startButton.disabled = true;
+                    break;
+                case "Pause":
+                    startButton.disabled = false;
+                    break;
+                case "Stop":
+                    startButton.disabled = false;
+                    break;
+            }
+
+            socket.emit("getAcao");
+        });
+
+        socket.on("acao", (act) => {
+            acao = act;
+        });
+
+        socket.on("mensagem", (msg) => {
+            var _texto = document.getElementById('textoAviso');
+            if (_texto) {
+                _texto.innerHTML = msg;
+            }
+        });
+
+        socket.on('timer', (value) => {
+            timerElement.textContent = value;
+        });
+
+    </script>
+
+</body>
+
+</html>
