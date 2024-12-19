@@ -7,32 +7,44 @@
     <meta name="description" content="Cronômetro para reuniões">
     <meta name="author" content="Fernando Domingues">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.blue.min.css">
     <link href='https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600&display=swap' rel='stylesheet'
         type='text/css'>
+
+    <link href="https://fonts.cdnfonts.com/css/lcd" rel="stylesheet">
+
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Doto:wght@100..900&family=Nabla&family=Syne+Mono&family=Zen+Dots&display=swap"
+        rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.4.0/fonts/remixicon.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/lcd');
+    </style>
 
     <style>
         body {
             text-align: center;
         }
 
-        /* button {
-                width: 60px;
-                height: 60px;
-            } */
-
         .relogio {
             color: #fff;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.5rem;
+            font-family: 'LCD', sans-serif;
+            font-size: 3.25rem;
             letter-spacing: 1rem;
-            font-weight: bold;
+            font-weight: bolder;
             text-shadow: 1px 2px #000000;
             text-align: center;
-            width: 80%;
+            width: 100%;
+        }
+
+        .texto-nitido {
+            font-family: 'Roboto', sans-serif !important;
         }
 
         .acao {
@@ -47,7 +59,11 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            width: 99%;
+            width: 96%;
+            height: 190px;
+            border: 10px solid #194a7a;
+            border-radius: 20px;
+            background: linear-gradient(to right, #194a7a, #476f95);
         }
 
         .mostrador {
@@ -55,32 +71,64 @@
             flex-direction: row;
             justify-content: space-between;
             width: 100%;
-            background-color: grey;
+            height: 80px;
+            background: linear-gradient(to right, #194a7a, #476f95);
+            border-radius: 10px 10px 0px 0px;
+        }
+
+        .mostrador-verde {
+            background: linear-gradient(to right, #194a7a, #476f95) !important;
+        }
+
+        .direita {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .prompter {
             width: 100%;
-            height: 50px;
-            background-color: lightblue;
+            height: 40px;
+            background: linear-gradient(to right, #194a7a, #476f95);
+            border-radius: 0px 0px 10px 10px;
         }
 
         .aviso {
-            width: 100%;
-            color: black;
-            font-size: 20pt;
-            font-family: 'Orbitron', sans-serif;
+            width: auto;
+            font-size: 18pt;
+            font-family: 'Doto', sans-serif;
             overflow: hidden;
+            white-space: nowrap;
         }
 
         #textoAviso {
-            color: black;
-            font-size: 20pt;
+            color: #fff;
+            text-shadow: 1px 2px #000000;
+            font-size: 15pt;
             -moz-transform: translateX(100%);
             -webkit-transform: translateX(100%);
             transform: translateX(100%);
             -moz-animation: slide-left 15s linear infinite;
             -webkit-animation: slide-left 15s linear infinite;
             animation: slide-left 15s linear infinite;
+            height:35px;
+        }
+
+        #reuniao {
+            color: #fff;
+            text-shadow: 1px 2px #000000;
+            font-family: 'Doto', sans-serif;
+            font-size: 11pt;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #iconeAcao {
+            font-size: 30pt;
+            color: #fff;
+            padding: 5px;
+            font-family: 'Doto', sans-serif;
         }
 
         @-moz-keyframes slide-left {
@@ -135,13 +183,20 @@
 
         .navShow {
             width: 99%;
+            height: 35px;
             display: flex;
             flex-direction: row;
-            justify-content: flex-end;
+            justify-content: center;
         }
 
         .navHide {
             display: none;
+        }
+
+        .playerButton {
+            padding: 0.25rem 0.5rem !important;
+            font-size: 10pt !important;
+            height: 30px;
         }
     </style>
 
@@ -185,62 +240,78 @@
 
 <body>
 
-    <div class="grid aparelho">
-        <div class="mostrador">
+    <div class="container aparelho">
+        <div id="mostrador" class="mostrador">
+            <div>
+                <div id="reuniao">
+                </div>
+            </div>
             <div id="timer" class="relogio">00:00</div>
             <div id="acao">
-                <i id="iconeAcao" class="ri-time-fill" style="font-size: 48px;"></i>
+                <i id="iconeAcao" class="ri-time-fill"></i>
                 <p id="activeName"></p>
             </div>
         </div>
+
         <div class="prompter">
             <div class="aviso" id="texto">
                 <p id="textoAviso"></p>
             </div>
         </div>
+
+        <div style="display: flex;flex-direction: row;justify-content: space-between;width: 100%;margin-top:5px;">
+
+            <nav>
+                <ul class="container navHide" id="navCommand">
+                    <li>
+                        <a href="#" onclick="startTime()" class="playerButton" role="button">
+                            <i class="ri-play-fill"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" title="Pausar" onclick="pauseTime()" class="playerButton" role="button">
+                            <i class="ri-pause-fill"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" title="Parar" onclick="stopTime()" class="playerButton" role="button">
+                            <i class="ri-stop-fill"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" title="Avisar" data-target="modal-msg" onClick="toggleModal(event)"
+                            class="playerButton" role="button">
+                            <i class="ri-mail-send-fill"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" id="limpar" title="Remover texto" onclick="cleanText()" class="playerButton"
+                            role="button">
+                            <i class="ri-mail-close-fill"></i>
+                        </a>
+                    </li>
+                </ul>
+                <ul style="height: 35px;">
+                    <li>
+                        <a href="#" id="btnTexto" title="Alterar Fonte" onclick="mudaTexto()" 
+                            class="playerButton primary"
+                            role="button">
+                            <i class="ri-font-size"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" id="voltar" title="Voltar para o início" onclick="voltar()"
+                            class="playerButton" role="button">
+                            <i class="ri-arrow-go-back-line"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>         
+        </div>
+
     </div>
 
-    <nav class="container navHide" id="navCommand">
-        <ul>
-            <li></li>
-        </ul>
-        <ul>
-            <li>
-                <button id="start" title="Iniciar" onclick="startTime()">
-                    <i class="ri-play-fill"></i>
-                </button>
-            </li>
-            <li>
-                <button id="pause" title="Pausar" onclick="pauseTime()">
-                    <i class="ri-pause-fill"></i>
-                </button>
-            </li>
-            <li>
-                <button id="reset" title="Parar" onclick="stopTime()">
-                    <i class="ri-stop-fill"></i>
-                </button>
-            </li>
-            <li>
-                <button id="abreAviso" title="Avisar" data-target="modal-msg" onClick="toggleModal(event)">
-                    <i class="ri-mail-send-fill"></i>
-                </button>
-            </li>
-            <li>
-                <button id="limpar" title="Remover texto" onclick="cleanText()">
-                    <i class="ri-mail-close-fill"></i>
-                </button>
-            </li>
-        </ul>
-        <ul>
-            <li>
-                <button id="voltar" title="Voltar para a seleção" class="contrast" onclick="voltar()">
-                    <i class="ri-arrow-go-back-line"></i>
-                </button>
-            </li>
-        </ul>
-    </nav>
-
-    <dialog id="modal-msg" class="container">
+    <dialog id="modal-msg" class="container-fluid">
         <article>
             <header>
                 <a href="#" aria-label="Close" class="close" data-target="modal-msg" onClick="toggleModal(event)"></a>
@@ -265,18 +336,25 @@
         const urlSearch = new URLSearchParams(window.location.search);
         const name = urlSearch.get('name');
         const meet = urlSearch.get('meet');
+        const _nome = meet.replaceAll('-', ' ')
+            .toLocaleUpperCase();
+        document.getElementById('reuniao').innerText = _nome;
 
         const avisarButton = document.getElementById('avisar');
         const timerElement = document.getElementById('timer');
         const startButton = document.getElementById('start');
         const pauseButton = document.getElementById('pause');
         const resetButton = document.getElementById('reset');
+        const telaButton = document.getElementById('tela');
 
         avisarButton.addEventListener('click', (e) => {
-            var _msg = document.getElementById('msgText');
+            var _msg = {
+                msg: document.getElementById('msgText').value,
+                meet
+            };
 
-            if (_msg) {
-                socket.emit('mensagem', _msg.value);
+            if (document.getElementById('msgText').value != '') {
+                socket.emit('enviaMensagem', _msg);
             }
 
             toggleModal(e);
@@ -298,45 +376,64 @@
         }
 
         socket.on("viewer", (rt) => {
-            alert(rt.name);
+
         });
 
         function startTime() {
-            socket.emit('start');
+            socket.emit('start', meet);
             socket.emit('defineAcao', 'Play');
-
+            classeAcao("ri-play-fill");
             var _inicio = new Date();
+            socket.emit('mensagem', `Início: ${_inicio.getHours().toString().padStart(2, '0')}:${_inicio.getMinutes().toString().padStart(2, '0')}`);
+        }
 
-            socket.emit('mensagem', `Inicio: ${_inicio.getHours()}:${_inicio.getMinutes().toString().padStart('0', 2)}`);
+        function classeAcao(classe) {
+            document.getElementById("iconeAcao").className = '';
+            document.getElementById("iconeAcao").classList.add(classe);
         }
 
         function pauseTime() {
-            socket.emit('pause');
+            socket.emit('pause', meet);
             socket.emit('defineAcao', 'Pause');
+            classeAcao("ri-pause-fill");
         }
 
         function stopTime() {
-            socket.emit('reset');
+            socket.emit('reset', meet);
             socket.emit('defineAcao', 'Stop');
+            classeAcao("ri-stop-fill");
         }
 
         function texting(e) {
 
-            var _msg = document.getElementById('msgText');
-
-            if (_msg) {
-                socket.emit('mensagem', _msg.value);
-            }
+            var data = {
+                msg: document.getElementById('msgText').value,
+                meet
+            };
+            socket.emit('enviaMensagem', data);
 
             toggleModal(e);
         }
 
         function cleanText() {
-            socket.emit('mensagem', '');
+            var data = {
+                msg: '',
+                meet
+            }
+            socket.emit('limpaMensagem', data);
         }
 
         function voltar() {
             window.location.href = "/";
+        }
+
+        function mudaTexto() {
+            document.getElementById('reuniao').classList.toggle('texto-nitido');
+            document.getElementById('textoAviso').classList.toggle('texto-nitido');
+        }
+
+        function mudaTela() {
+            document.getElementById('mostrador').classList.toggle('mostrador-verde');
         }
 
         socket.on("defineAcao", (val) => {

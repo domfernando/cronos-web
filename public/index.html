@@ -8,49 +8,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.blue.min.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.4.0/fonts/remixicon.css" rel="stylesheet">
 
-    <title>Cronometro - Selecione uma reunião</title>
+    <title>Cronômetro - Selecione uma reunião</title>
+
+    <style>
+        .playerButton {
+            padding: 0.25rem 0.5rem !important;
+            font-size: 10pt !important;
+            height: 55px;
+        }
+    </style>
 
 </head>
 
 <body>
 
     <div class="container">
-        <br />
-        <details>
-            <summary role="button" class="contrast">Entrar na reunião</summary>
-            <div>
-                <button type="button" onclick="selectMeet('reuniao','operador');">
-                    <i class="ri-user-settings-fill"></i>Como Operador
-                </button>
-                <button type="button" onclick="selectMeet('reuniao','orador');">
-                    <i class="ri-speak-fill"></i> Como Orador
+        <div class="row">
+
+            <div role="group" id="login" style="text-align: center;justify-content:center;padding:10px">
+                <img src="img/crono.png" alt="Cronometro" style="max-width: 64px;margin-top: -10px;" />
+                <input type="number" id="cong" placeholder="Informe o código" />
+                <button id="conectar" class="playerButton primary" >
+                    <i class="ri-shield-keyhole-fill"></i> Conectar
                 </button>
             </div>
-        </details>
+
+        </div>
+
+        <div id="inicio" style="display: none;text-align: center; justify-content: center;">
+            <div style="display:flex;flex-direction:row;justify-content: flex-start;align-items: center;">
+                <i class="ri-home-fill" style="font-size: 30pt;"></i>
+                <h3 id="Nome" style="margin-top: 15px;"></h3>
+            </div>
+
+            <details>
+
+                <summary role="button" class="contrast">Entrar na reunião</summary>
+
+                <div>
+                    <button type="button" onclick="selectMeet('operador');">
+                        <i class="ri-user-settings-fill"></i>Como Operador
+                    </button>
+                    <button type="button" onclick="selectMeet('orador');">
+                        <i class="ri-speak-fill"></i> Como Orador
+                    </button>
+                </div>
+            </details>
+        </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
+    <input type="hidden" id="congregacao" />
+
     <script>
-        const socket = io();
 
-      function selectMeet(meet, name) {
-            var data = {
-                meet: meet,
-                name: name
-            };
+        let logado = false;
+        let Cong = {};
+        const conectarButton = document.getElementById('conectar');
+        conectarButton.addEventListener('click', async (e) => {
 
-            socket.emit('select_meet', data);
-            socket.emit('getViewers');
+            if (document.getElementById('cong').value != '') {
+                var dados = await fetch(`/teste?codigo=${document.getElementById('cong').value}`,
+                    {
+                        method: 'GET'
+                    }).then(response => {
+                        if (!response.ok) {
+                            alert('Código incorreto');
+                            return false;
+                        }
+                        return response.json();
+                    }).then(data => {
+                        console.log(data);
+                        if (data.success == true) {
+                            Cong = data;
+                            document.getElementById('login').style.display = 'none';
+                            document.getElementById('inicio').style.display = 'block';
+                            document.getElementById('Nome').innerText = data.cong.nome;
+                            document.getElementById('congregacao').value = data.cong.chave;
+                        } 
+                    });
 
-            window.location.href=`/tempo?meet=${meet}&name=${name}`;
-        }
-
-        socket.on("viewers",(rt) =>{
-            console.log(rt.length);
+            } else {
+                alert('Informe o código');
+                return false;
+            }
         });
-        
+
+        function selectMeet(name) {
+            window.location.href = `/tempo?meet=${document.getElementById('congregacao').value}&name=${name}`;
+        }
     </script>
 </body>
 

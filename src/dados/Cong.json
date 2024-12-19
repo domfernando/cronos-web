@@ -1,0 +1,19 @@
+{
+    "Congs": [
+        {
+            "codigo": "27342",
+            "chave": "morro-verde",
+            "nome": "Morro Verde"
+        },
+        {
+            "codigo": "87965",
+            "chave": "jd-los-angeles",
+            "nome": "Jardim Los Angeles"
+        },
+        {
+            "codigo": "129825",
+            "chave": "parque-dos-ipes",
+            "nome": "Parque dos Ipês"
+        }
+    ]
+}
